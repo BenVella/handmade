@@ -11,7 +11,7 @@ COMPILER="c++"
 CFLAGS="-g $(sdl2-config --cflags --libs)"
 
 # Compile
-$COMPILER $CFLAGS "$INPUT_FILE" -o "$OUTPUT_FILE"
+$COMPILER "$INPUT_FILE" -o "$OUTPUT_FILE" $CFLAGS 
 
 # Convert CFLAGS string to array
 read -ra FLAGS_ARRAY <<< "$CFLAGS"
