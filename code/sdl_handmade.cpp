@@ -50,8 +50,10 @@ int Quit() {
 }
 
 int main(int argc, char *argv[]) { 
-  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Hello", "Hello, World!", NULL);
+  SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
   SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
+  SDL_Log("Starting application with verbose logging...");
+  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Hello", "Hello, World!", 0);
   bool sdlInitialised = SDL_Init(SDL_INIT_VIDEO) == 0;
   if (!sdlInitialised) {
 

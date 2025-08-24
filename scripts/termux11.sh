@@ -1,5 +1,5 @@
 #!/bin/bash
-
+echo "TERMUX: Setting up x11 server"
 # Set custom tmp path
 export TMPDIR="$PREFIX/tmp"
 
@@ -27,3 +27,4 @@ fi
 
 # Start Termux:X11 (non-legacy, no desktop)
 termux-x11 :1 -legacy-drawing &
+#termux-x11 :1 &
