@@ -1,3 +1,9 @@
+# handmade
+
+Inspired by Casey from Rocket Molly's Hanmade Hero series.  Following Hanmade Penguin loosely with environment adaptations to function on Termux and termux-x11.
+
+This entire project is being built on my shoddy Poco X3 Droid.  Only join my folly if you're just as foolish.
+ 
 ## Breaking Bugs
 
 - On termux the dialog is rendering but the actual window is not
