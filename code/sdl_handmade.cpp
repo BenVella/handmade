@@ -1,5 +1,7 @@
 #include "SDL_error.h"
 #include "SDL_events.h"
+#include "SDL_log.h"
+#include "SDL_render.h"
 #include "SDL_video.h"
 #include <SDL.h>
 
@@ -15,11 +17,11 @@ bool HandleWindowEvent(SDL_WindowEvent *winEvent) {
       static bool IsWhite = true;
       if (IsWhite)
       {
-        SDL_SetRenderDrawColor(Renderer, 255, 255, 255, 255);
+        SDL_SetRenderDrawColor(Renderer, 0, 255, 0, 255);
       }
       else
       {
-        SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(Renderer, 255, 0, 0, 255);
       }
       IsWhite = !IsWhite;
     } break;
@@ -53,27 +55,29 @@ int main(int argc, char *argv[]) {
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
   SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
   SDL_Log("Starting application with verbose logging...");
+
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Hello", "Hello, World!", 0);
+
   bool sdlInitialised = SDL_Init(SDL_INIT_VIDEO) == 0;
   if (!sdlInitialised) {
-
-    const char* error = SDL_GetError();
-    printf("Failed SDL Init %s\n", error);
+    SDL_Log("Failed SDL Init %s\n", SDL_GetError());
     return Quit();
   }
+
   SDL_Window *Window =
       SDL_CreateWindow("Handmade",
           0, 0, 320, 480,
           SDL_WINDOW_RESIZABLE);
 
   if (!Window) {
+    SDL_Log("Post Window SDL Error: %s\n", SDL_GetError());
     return Quit();
   }
 
-// Create a "Renderer" for our window.
-  SDL_Renderer *Renderer = SDL_CreateRenderer(Window, -1, 0);
+  SDL_Renderer *Renderer = SDL_CreateRenderer(Window, -1, SDL_RENDERER_SOFTWARE);
 
   if (!Renderer) {
+    SDL_Log("Post Renderer SDL Error: %s\n", SDL_GetError());
     return Quit();
   }
 

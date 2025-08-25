@@ -1,5 +1,7 @@
 local dap = require("dap")
 
+-- codelldb must be installed directly in termux
+-- run `pkg install x11-repo && pkg isntall codelldb`
 dap.adapters.lldb = {
   type = "executable",
   command = "codelldb",
@@ -8,17 +10,16 @@ dap.adapters.lldb = {
 
 dap.configurations.cpp = {
   {
-    name = "Launch handmade with Termux setup",
+    name = "Launch via shell script",
     type = "lldb",
     request = "launch",
-    program = function()
-      -- Source your setup script before launching
-      vim.fn.system({ "bash", "-c", "source ./scripts/termux11.sh" })
-      return "./out/handmade"
-    end,
+    program = "${workspaceFolder}/out/handmade",
     cwd = "${workspaceFolder}",
+    runInTerminal = true,
+    env = {
+      DISPLAY = ":1",
+    },
     stopOnEntry = false,
-    args = {},
-    runInTerminal = false,
   },
 }
+
