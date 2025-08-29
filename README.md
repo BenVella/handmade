@@ -1,29 +1,31 @@
-# handmade
-
-Inspired by Casey from Rocket Molly's Hanmade Hero series.  Following Hanmade Penguin loosely with environment adaptations to function on Termux and termux-x11.
-
-This entire project is being built on my shoddy Poco X3 Droid.  Only join my folly if you're just as foolish.
- 
-## Breaking Bugs
-
-- On termux the dialog is rendering but the actual window is not
-    - There is a reported medium font not found error currently
-
 ## Termux Launch
 
 - Requires x11-repo and termux-x11 installed (both pkg and app)
-- Likely alson requires zenity to be installed (confirm functionality with the dialog script)
+- Requires `jq` when building to generate `./compile_commands.json` file for lsp resolution of SDL
 
-Run `scripts/termux11.sh` **as source**:
+- Might also requires zenity to be installed (confirm functionality with the dialog script)
+
+## Prep, Build and Launch
+
+This will fore up tx11, update env vars and launch the program
 
 ```bash
 source ./scripts/termux11.sh
-```
-
-Wait a moment for the x11 app to Launch then run the compiled binary
-
-```bash
+./build.sh
 ./out/handmade
 ```
 
 Do not combine the two commands, x11 should only be started once per session and done via source.  You may have to restart termux fully in case of a mistake
+
+## Debug
+
+In nvim open a new tab with `<leader>tt`
+
+```bash
+source ./scripts/termux11.sh
+./build.sh
+```
+
+Fire up debugger in a cpp file with `<leader>dd`.
+
+This should automatically launch with the handmade binary.

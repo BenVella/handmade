@@ -14,6 +14,7 @@ SDL_Renderer* DrawColor(const Uint32& windowID, const Color& color) {
   SDL_SetRenderDrawColor(Renderer, color.r, color.g, color.b, 255);
   SDL_RenderClear(Renderer);
   SDL_RenderPresent(Renderer);
+
   return Renderer;
 }
 
