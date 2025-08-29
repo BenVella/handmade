@@ -13,17 +13,12 @@ sleep 1
 TMPDIR="$PREFIX/tmp"
 rm -rf "$TMPDIR/.X11-unix" "$TMPDIR/.X1-lock"
 
+echo "Termux:X11 activity not running. Starting it..."
+am start -n com.termux.x11/.MainActivity
+sleep 2  # Give it time to initialize
+
 # Export display
 export DISPLAY=:1
-
-# Check if Termux:X11 Android activity is running
-if ! pidof termux-x11 >/dev/null; then
-    echo "Termux:X11 activity not running. Starting it..."
-    am start -n com.termux.x11/.MainActivity
-    sleep 2  # Give it time to initialize
-else
-    echo "Termux:X11 activity is already running."
-fi
 
 # Start Termux:X11 (non-legacy, no desktop)
 termux-x11 :1 -legacy-drawing &

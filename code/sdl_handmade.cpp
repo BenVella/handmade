@@ -2,31 +2,50 @@
 #include "SDL_events.h"
 #include "SDL_log.h"
 #include "SDL_render.h"
+#include "SDL_stdinc.h"
 #include "SDL_video.h"
+#include "sdl_colors.h"
 #include <SDL.h>
 
-bool HandleWindowEvent(SDL_WindowEvent *winEvent) {
-  switch (winEvent->event) {
+SDL_Renderer* DrawColor(const Uint32& windowID, const Color& color) {
+  SDL_Window *Window = SDL_GetWindowFromID(windowID);
+  SDL_Renderer *Renderer = SDL_GetRenderer(Window);
+
+  SDL_SetRenderDrawColor(Renderer, color.r, color.g, color.b, 255);
+  SDL_RenderClear(Renderer);
+  SDL_RenderPresent(Renderer);
+  return Renderer;
+}
+
+bool HandleWindowEvent(const SDL_WindowEvent& winEvent) {
+  SDL_Log("Handling WinEvent: %d\n", winEvent.event);
+
+  SDL_Renderer* Renderer;
+  switch (winEvent.event) {
     case SDL_WINDOWEVENT_RESIZED: {
-      printf("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", winEvent->data1, winEvent->data2);
+      SDL_Log("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", 
+          winEvent.data1, winEvent.data2);
     } break;
     case SDL_WINDOWEVENT_EXPOSED:
     {
-      SDL_Window *Window = SDL_GetWindowFromID(winEvent->windowID);
-      SDL_Renderer *Renderer = SDL_GetRenderer(Window);
       static bool IsWhite = true;
-      if (IsWhite)
-      {
-        SDL_SetRenderDrawColor(Renderer, 0, 255, 0, 255);
-      }
-      else
-      {
-        SDL_SetRenderDrawColor(Renderer, 255, 0, 0, 255);
-      }
+      Renderer = DrawColor(winEvent.windowID, IsWhite ? WHITE : GRAY);
       IsWhite = !IsWhite;
     } break;
-
+    case SDL_WINDOWEVENT_FOCUS_GAINED:
+    {
+      Renderer = DrawColor(winEvent.windowID, YELLOW);
+    } break;
+    case SDL_WINDOWEVENT_FOCUS_LOST:
+    {
+      Renderer = DrawColor(winEvent.windowID, CYAN);
+    } break;
+    default:
+    {
+      Renderer = DrawColor(winEvent.windowID, ORANGE);
+    } break;
   }
+
   return false;
 }
 
@@ -39,7 +58,7 @@ bool HandleEvent(SDL_Event *Event) {
       ShouldQuit = true;
     } break;
     case SDL_WINDOWEVENT: {
-      ShouldQuit = HandleWindowEvent(&(Event->window));
+      ShouldQuit = HandleWindowEvent(Event->window);
     } break;
   }
 
@@ -56,7 +75,8 @@ int main(int argc, char *argv[]) {
   SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
   SDL_Log("Starting application with verbose logging...");
 
-  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Hello", "Hello, World!", 0);
+  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, 
+      "Hello", "Hello, World!", 0);
 
   bool sdlInitialised = SDL_Init(SDL_INIT_VIDEO) == 0;
   if (!sdlInitialised) {
@@ -64,17 +84,21 @@ int main(int argc, char *argv[]) {
     return Quit();
   }
 
-  SDL_Window *Window =
-      SDL_CreateWindow("Handmade",
-          0, 0, 320, 480,
-          SDL_WINDOW_RESIZABLE);
+  Uint64 window_flags = SDL_WINDOW_OPENGL | 
+                        SDL_WINDOW_RESIZABLE;
+  SDL_Window* Window = SDL_CreateWindow("Handmade App",
+                  SDL_WINDOWPOS_CENTERED,
+                  SDL_WINDOWPOS_CENTERED,
+                  800, 800,
+                  window_flags);
 
   if (!Window) {
     SDL_Log("Post Window SDL Error: %s\n", SDL_GetError());
     return Quit();
   }
 
-  SDL_Renderer *Renderer = SDL_CreateRenderer(Window, -1, SDL_RENDERER_SOFTWARE);
+  SDL_Renderer *Renderer = SDL_CreateRenderer(Window, 
+                      -1, SDL_RENDERER_SOFTWARE);
 
   if (!Renderer) {
     SDL_Log("Post Renderer SDL Error: %s\n", SDL_GetError());
@@ -85,9 +109,9 @@ int main(int argc, char *argv[]) {
   {
     SDL_Event Event;
     SDL_WaitEvent(&Event);
-    if (HandleEvent(&Event))
-    {
+
+    bool ShouldQuit = HandleEvent(&Event);
+    if (ShouldQuit)
         break;
-    }
   }
 }
