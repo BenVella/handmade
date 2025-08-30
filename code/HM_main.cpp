@@ -4,7 +4,7 @@
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
 #include "SDL_video.h"
-#include "sdl_colors.h"
+#include "HM_sdl_main.h"
 #include <SDL.h>
 
 SDL_Renderer* DrawColor(const Uint32& windowID, const Color& color) {

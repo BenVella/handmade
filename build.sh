@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INPUT_FILE="$SOURCE_DIR/code/sdl_handmade.cpp"
+INPUT_FILE="$SOURCE_DIR/code/HM_main.cpp"
 OUTPUT_FILE="$SOURCE_DIR/out/handmade"
 COMPILE_COMMANDS="$SOURCE_DIR/compile_commands.json"
 
