@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SDL_render.h"
 #include "SDL_video.h"
 #include <SDL.h>
 
@@ -22,13 +21,5 @@ const Color MAGENTA = {255, 0, 255};
 const Color GRAY    = {128, 128, 128};
 const Color ORANGE  = {255, 165, 0};
 
-void HM_RenderTexture(SDL_Window* window) {
-  SDL_Renderer* renderer = SDL_GetRenderer(window);
-  int w, h;
-  SDL_GetWindowSize(window, &w, &h);
-  SDL_Texture *Texture = SDL_CreateTexture(
-      renderer, 
-      SDL_PIXELFORMAT_ARGB8888,
-      SDL_TEXTUREACCESS_STREAMING,
-      w, h);
-}
+void HM_SDLResizeTexture(SDL_Window* window);
+

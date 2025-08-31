@@ -7,10 +7,20 @@
 #include "HM_sdl_main.h"
 #include <SDL.h>
 
-SDL_Renderer* DrawColor(const Uint32& windowID, const Color& color) {
-  SDL_Window *Window = SDL_GetWindowFromID(windowID);
-  SDL_Renderer *Renderer = SDL_GetRenderer(Window);
+struct hm_app {
+  bool IsRunning;
+  SDL_Window* Window;
+  SDL_Renderer* Renderer;
+} hm_app;
 
+// Gobal static app state
+static struct hm_app HM_App;
+
+void StopRunning () {
+  HM_App.IsRunning = false;
+}
+
+SDL_Renderer* DrawColor(SDL_Renderer* Renderer, const Color& color) {
   SDL_SetRenderDrawColor(Renderer, color.r, color.g, color.b, 255);
   SDL_RenderClear(Renderer);
   SDL_RenderPresent(Renderer);
@@ -18,52 +28,49 @@ SDL_Renderer* DrawColor(const Uint32& windowID, const Color& color) {
   return Renderer;
 }
 
-bool HandleWindowEvent(const SDL_WindowEvent& winEvent) {
+void HandleSdlWindowEvent(const SDL_WindowEvent& winEvent) {
   SDL_Log("Handling WinEvent: %d\n", winEvent.event);
 
-  SDL_Renderer* Renderer;
+  SDL_Window* window = SDL_GetWindowFromID(winEvent.event);
+  SDL_Renderer* renderer = SDL_GetRenderer(window);
   switch (winEvent.event) {
-    case SDL_WINDOWEVENT_RESIZED: {
-      SDL_Log("SDL_WINDOWEVENT_RESIZED (%d, %d)\n", 
+    case SDL_WINDOWEVENT_SIZE_CHANGED: {
+      SDL_Log("SDL_WINDOWEVENT_SIZE_CHANGED (%d, %d)\n", 
           winEvent.data1, winEvent.data2);
+      HM_SDLResizeTexture(window);
     } break;
     case SDL_WINDOWEVENT_EXPOSED:
     {
       static bool IsWhite = true;
-      Renderer = DrawColor(winEvent.windowID, IsWhite ? WHITE : GRAY);
+      DrawColor(renderer, IsWhite ? WHITE : GRAY);
       IsWhite = !IsWhite;
     } break;
     case SDL_WINDOWEVENT_FOCUS_GAINED:
     {
-      Renderer = DrawColor(winEvent.windowID, YELLOW);
+      DrawColor(renderer, YELLOW);
     } break;
     case SDL_WINDOWEVENT_FOCUS_LOST:
     {
-      Renderer = DrawColor(winEvent.windowID, CYAN);
+      DrawColor(renderer, CYAN);
     } break;
     default:
     {
-      Renderer = DrawColor(winEvent.windowID, ORANGE);
+      DrawColor(renderer, ORANGE);
     } break;
   }
-
-  return false;
 }
 
-bool HandleEvent(SDL_Event *Event) {
-  bool ShouldQuit = false;
+void HandleEvent(SDL_Event *Event) {
 
   switch (Event->type) {
     case SDL_QUIT: {
       printf("SDL_QUIT\n");
-      ShouldQuit = true;
+      StopRunning();
     } break;
     case SDL_WINDOWEVENT: {
-      ShouldQuit = HandleWindowEvent(Event->window);
+      HandleSdlWindowEvent(Event->window);
     } break;
   }
-
-  return (ShouldQuit);
 }
 
 int Quit() {
@@ -105,13 +112,13 @@ int main(int argc, char *argv[]) {
     return Quit();
   }
 
-  for(;;)
+  hm_app.IsRunning = true;
+  while(hm_app.IsRunning)
   {
     SDL_Event Event;
     SDL_WaitEvent(&Event);
 
-    bool ShouldQuit = HandleEvent(&Event);
-    if (ShouldQuit)
-        break;
+    HandleEvent(&Event);
   }
+  Quit();
 }
