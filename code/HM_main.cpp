@@ -34,11 +34,11 @@ void HandleSdlWindowEvent(const SDL_WindowEvent& winEvent) {
       DrawColor(renderer, IsWhite ? WHITE : GRAY);
       IsWhite = !IsWhite;
     } break;
-    case SDL_WINDOWEVENT_FOCUS_GAINED:
+    case SDL_WINDOWEVENT_ENTER:
     {
-      DrawColor(renderer, YELLOW);
+      HM_SDLResizeTexture(window);
     } break;
-    case SDL_WINDOWEVENT_FOCUS_LOST:
+    case SDL_WINDOWEVENT_LEAVE:
     {
       DrawColor(renderer, CYAN);
     } break;

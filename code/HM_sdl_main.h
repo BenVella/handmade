@@ -23,3 +23,4 @@ const Color ORANGE  = {255, 165, 0};
 
 void HM_SDLResizeTexture(SDL_Window* window);
 
+void RenderOffsetGradient (int offX, int offY);
