@@ -9,42 +9,39 @@
 #include "HM_sdl_main.h"
 #include "HM_common.h"
 
-SDL_Renderer* DrawColor(SDL_Renderer* Renderer, const Color& color) {
-  SDL_SetRenderDrawColor(Renderer, color.r, color.g, color.b, 255);
-  SDL_RenderClear(Renderer);
-  SDL_RenderPresent(Renderer);
-
-  return Renderer;
+void DrawColor(const Color& color) {
+  SDL_Renderer* renderer = hm_sdl.renderer;
+  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+  SDL_RenderClear(renderer);
+  SDL_RenderPresent(renderer);
 }
 
 void HandleSdlWindowEvent(const SDL_WindowEvent& winEvent) {
   SDL_Log("Handling WinEvent: %d\n", winEvent.event);
 
-  SDL_Window* window = hm_app.Window;
-  SDL_Renderer* renderer = hm_app.Renderer;
   switch (winEvent.event) {
     case SDL_WINDOWEVENT_SIZE_CHANGED: {
       SDL_Log("SDL_WINDOWEVENT_SIZE_CHANGED (%d, %d)\n", 
           winEvent.data1, winEvent.data2);
-      HM_SDLResizeTexture(window);
+      HM_SDLSetupTexture();
     } break;
     case SDL_WINDOWEVENT_EXPOSED:
     {
       static bool IsWhite = true;
-      DrawColor(renderer, IsWhite ? WHITE : GRAY);
+      DrawColor(IsWhite ? WHITE : GRAY);
       IsWhite = !IsWhite;
     } break;
     case SDL_WINDOWEVENT_ENTER:
     {
-      HM_SDLResizeTexture(window);
+      HM_SDLSetupTexture();
     } break;
     case SDL_WINDOWEVENT_LEAVE:
     {
-      DrawColor(renderer, CYAN);
+      DrawColor(CYAN);
     } break;
     default:
     {
-      DrawColor(renderer, ORANGE);
+      DrawColor(ORANGE);
     } break;
   }
 }
@@ -59,6 +56,13 @@ void HandleEvent(SDL_Event *Event) {
     case SDL_WINDOWEVENT: {
       HandleSdlWindowEvent(Event->window);
     } break;
+  }
+}
+
+void PollSdlEvents() {
+  SDL_Event event;
+  while(SDL_PollEvent(&event)) {
+    HandleEvent(&event);
   }
 }
 
@@ -83,32 +87,35 @@ int main(int argc, char *argv[]) {
 
   Uint64 window_flags = SDL_WINDOW_OPENGL | 
                         SDL_WINDOW_RESIZABLE;
-  hm_app.Window = SDL_CreateWindow("Handmade App",
+  hm_sdl.window = SDL_CreateWindow("Handmade App",
                   SDL_WINDOWPOS_CENTERED,
                   SDL_WINDOWPOS_CENTERED,
                   800, 800,
                   window_flags);
 
-  if (!hm_app.Window) {
+  if (!hm_sdl.window) {
     LogSdlError("Post Window SDL Error");
     return Quit();
   }
 
-  hm_app.Renderer = SDL_CreateRenderer(hm_app.Window, 
+  hm_sdl.renderer = SDL_CreateRenderer(hm_sdl.window, 
                       -1, SDL_RENDERER_SOFTWARE);
 
-  if (!hm_app.Renderer) {
+  if (!hm_sdl.renderer) {
     SDL_Log("Post Renderer SDL Error: %s\n", SDL_GetError());
     return Quit();
   }
 
   StartRunning();
+
+  HM_SDLSetupTexture();
+  int offX, offY = 0;
   while(hm_app.IsRunning)
   {
-    SDL_Event Event;
-    SDL_WaitEvent(&Event);
-
-    HandleEvent(&Event);
+    PollSdlEvents();
+    offX = (offX + 1) % 255;
+    offY = offX;
+    HM_RenderOffsetGradient(offX, offY);
   }
   Quit();
 }

@@ -3,6 +3,18 @@
 #include "SDL_video.h"
 #include <SDL.h>
 
+struct HM_Sdl {
+  SDL_Window* window;
+  SDL_Renderer* renderer;
+  int bytesPerPixel = 4;
+  int bitmapWidth;
+  int bitmapHeight;
+  void* bitmapMemory;
+  SDL_Texture* bitmapTexture;
+};
+
+extern struct HM_Sdl hm_sdl;
+
 typedef struct Color {
     Uint8 r;
     Uint8 g;
@@ -21,6 +33,7 @@ const Color MAGENTA = {255, 0, 255};
 const Color GRAY    = {128, 128, 128};
 const Color ORANGE  = {255, 165, 0};
 
-void HM_SDLResizeTexture(SDL_Window* window);
+void HM_RenderTexture();
+void HM_SDLSetupTexture();
+void HM_RenderOffsetGradient (int offX, int offY);
 
-void RenderOffsetGradient (int offX, int offY);
