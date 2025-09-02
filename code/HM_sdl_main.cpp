@@ -1,17 +1,90 @@
 #include "HM_sdl_main.h"
 
 #include "HM_common.h"
+#include "SDL_gamecontroller.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
+#include <sys/mman.h>
 
 #include <cstdlib>
 
 struct HM_Sdl hm_sdl;
+const int maxControllers = 4;
+SDL_GameController* ControllerHandles[maxControllers];
+
+bool HM_SDLSetup() {
+  SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+  SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
+  SDL_Log("Starting application with verbose logging...");
+
+  SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, 
+      "Hello", "Hello, World!", 0);
+
+  int sdlInitialised = SDL_Init(
+        SDL_INIT_VIDEO |
+        SDL_INIT_GAMECONTROLLER);
+  if (sdlInitialised != 0) {
+    LogSdlError("Failed SDL Init");
+    SDL_Quit();
+    return false;
+  }
+
+  bool vidOk = HM_SdlSetupVideo();
+  if (!vidOk)
+    return false;
+
+  HM_SdlSetupControllers();
+  return true;
+}
+
+bool HM_SdlSetupVideo() {
+  Uint64 window_flags = SDL_WINDOW_OPENGL | 
+                        SDL_WINDOW_RESIZABLE;
+  hm_sdl.window = SDL_CreateWindow("Handmade App",
+                  SDL_WINDOWPOS_CENTERED,
+                  SDL_WINDOWPOS_CENTERED,
+                  800, 800,
+                  window_flags);
+
+  if (!hm_sdl.window) {
+    LogSdlError("Post Window SDL Error");
+    SDL_Quit();
+    return false;
+  }
+
+  hm_sdl.renderer = SDL_CreateRenderer(hm_sdl.window, 
+                      -1, SDL_RENDERER_SOFTWARE);
+
+  if (!hm_sdl.renderer) {
+    LogSdlError("Post Renderer SDL Error");
+    SDL_Quit();
+    return false;
+  }
+  return true;
+}
+
+void HM_SdlSetupControllers() {
+  int MaxJoysticks = SDL_NumJoysticks();
+  int ControllerIndex = 0;
+  for(int JoystickIndex=0; JoystickIndex < MaxJoysticks; ++JoystickIndex)
+  {
+      if (!SDL_IsGameController(JoystickIndex))
+      {
+          continue;
+      }
+      if (ControllerIndex >= maxControllers)
+      {
+          break;
+      }
+      ControllerHandles[ControllerIndex] = SDL_GameControllerOpen(JoystickIndex);
+      ControllerIndex++;
+  }
+}
 
 void HM_RenderTexture() {
-  int pitch = hm_sdl.bitmapWidth * hm_sdl.bytesPerPixel;
   if (SDL_UpdateTexture(
-        hm_sdl.bitmapTexture, 0, hm_sdl.bitmapMemory, pitch)
+        hm_sdl.bitmapTexture, 0, 
+        hm_sdl.bitmapMemory, hm_sdl.pitch)
   ) {
     LogSdlError("SDL Update Texture failed");
   }
@@ -37,17 +110,30 @@ void HM_SDLSetupTexture() {
   // Make texture width accessible globally
   hm_sdl.bitmapWidth = w;
   hm_sdl.bitmapHeight = h;
+  short bytesPerPixel = 4;
+  hm_sdl.pitch = hm_sdl.bitmapWidth * bytesPerPixel;
+  hm_sdl.textureSize = hm_sdl.pitch * hm_sdl.bitmapHeight;
 
   if (hm_sdl.bitmapMemory) {
-    free(hm_sdl.bitmapMemory);
+    munmap(hm_sdl.bitmapMemory, hm_sdl.textureSize);
   }
-  hm_sdl.bitmapMemory = malloc(w * h * hm_sdl.bytesPerPixel);
+
+  hm_sdl.bitmapMemory = mmap(0,
+      hm_sdl.textureSize,
+    PROT_READ | PROT_WRITE,
+    MAP_ANONYMOUS | MAP_PRIVATE,
+    -1, 0);
+
+  // malloc and free posix compliant option:
+  // if (hm_sdl.bitmapMemory) {
+  //   free(hm_sdl.bitmapMemory);
+  // }
+  // hm_sdl.bitmapMemory = malloc(hm_sdl.textureSize);
 
   HM_RenderTexture();
 }
 
 void HM_RenderOffsetGradient (int offX, int offY) {
-  int pitch = hm_sdl.bitmapWidth * hm_sdl.bytesPerPixel;
   Uint8* row = (Uint8*) hm_sdl.bitmapMemory;
 
   for (int y = 0; y < hm_sdl.bitmapHeight; ++y) {
@@ -66,7 +152,7 @@ void HM_RenderOffsetGradient (int offX, int offY) {
       *pixel = 0;
       ++pixel;
     }
-    row += pitch;
+    row += hm_sdl.pitch;
   }
   HM_RenderTexture();
 }

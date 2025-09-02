@@ -6,11 +6,12 @@
 struct HM_Sdl {
   SDL_Window* window;
   SDL_Renderer* renderer;
-  int bytesPerPixel = 4;
+  SDL_Texture* bitmapTexture;
+  void* bitmapMemory;
   int bitmapWidth;
   int bitmapHeight;
-  void* bitmapMemory;
-  SDL_Texture* bitmapTexture;
+  int pitch;
+  int textureSize;
 };
 
 extern struct HM_Sdl hm_sdl;
@@ -33,6 +34,9 @@ const Color MAGENTA = {255, 0, 255};
 const Color GRAY    = {128, 128, 128};
 const Color ORANGE  = {255, 165, 0};
 
+bool HM_SDLSetup();
+bool HM_SdlSetupVideo();
+void HM_SdlSetupControllers();
 void HM_RenderTexture();
 void HM_SDLSetupTexture();
 void HM_RenderOffsetGradient (int offX, int offY);

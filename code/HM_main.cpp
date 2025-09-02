@@ -79,32 +79,11 @@ int main(int argc, char *argv[]) {
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, 
       "Hello", "Hello, World!", 0);
 
-  bool sdlInitialised = SDL_Init(SDL_INIT_VIDEO) == 0;
-  if (!sdlInitialised) {
-    LogSdlError("Failed SDL Init");
-    return Quit();
+  if (!HM_SDLSetup()) {
+    SDL_Log("Exiting due to failed Window or Renderer startup");
   }
 
-  Uint64 window_flags = SDL_WINDOW_OPENGL | 
-                        SDL_WINDOW_RESIZABLE;
-  hm_sdl.window = SDL_CreateWindow("Handmade App",
-                  SDL_WINDOWPOS_CENTERED,
-                  SDL_WINDOWPOS_CENTERED,
-                  800, 800,
-                  window_flags);
-
-  if (!hm_sdl.window) {
-    LogSdlError("Post Window SDL Error");
-    return Quit();
-  }
-
-  hm_sdl.renderer = SDL_CreateRenderer(hm_sdl.window, 
-                      -1, SDL_RENDERER_SOFTWARE);
-
-  if (!hm_sdl.renderer) {
-    SDL_Log("Post Renderer SDL Error: %s\n", SDL_GetError());
-    return Quit();
-  }
+  SDL_Log("SDL Window started auccessfully");
 
   StartRunning();
 
