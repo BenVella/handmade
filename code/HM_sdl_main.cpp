@@ -1,6 +1,7 @@
 #include "HM_sdl_main.h"
 
 #include "HM_common.h"
+#include "SDL.h"
 #include "SDL_gamecontroller.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
@@ -20,7 +21,8 @@ bool HM_SDLSetup() {
 
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, 
       "Hello", "Hello, World!", 0);
-
+  
+  atexit(SDL_Quit);
   int sdlInit = SDL_Init(
         SDL_INIT_VIDEO |
         SDL_INIT_GAMECONTROLLER);
