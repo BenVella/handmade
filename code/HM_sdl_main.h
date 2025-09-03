@@ -36,7 +36,9 @@ const Color ORANGE  = {255, 165, 0};
 
 bool HM_SDLSetup();
 bool HM_SdlSetupVideo();
-void HM_SdlSetupControllers();
+void HM_SdlOpenControllers();
+void HM_SdlCloseControllers();
+void HM_SdlCloseController();
 void HM_RenderTexture();
 void HM_SDLSetupTexture();
 void HM_RenderOffsetGradient (int offX, int offY);

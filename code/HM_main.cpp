@@ -59,7 +59,7 @@ void HandleEvent(SDL_Event *Event) {
     case SDL_CONTROLLERDEVICEADDED:
     case SDL_CONTROLLERDEVICEREMOVED:
     case SDL_CONTROLLERDEVICEREMAPPED: {
-      HM_SdlSetupControllers();
+      HM_SdlOpenControllers();
     } break;
   }
 }

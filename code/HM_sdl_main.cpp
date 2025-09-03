@@ -10,7 +10,8 @@
 
 struct HM_Sdl hm_sdl;
 const int maxControllers = 4;
-SDL_GameController* ControllerHandles[maxControllers];
+int numControllers;
+SDL_GameController* controllerHandles[maxControllers];
 
 bool HM_SDLSetup() {
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
@@ -20,10 +21,10 @@ bool HM_SDLSetup() {
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, 
       "Hello", "Hello, World!", 0);
 
-  int sdlInitialised = SDL_Init(
+  int sdlInit = SDL_Init(
         SDL_INIT_VIDEO |
         SDL_INIT_GAMECONTROLLER);
-  if (sdlInitialised != 0) {
+  if (sdlInit != 0) {
     LogSdlError("Failed SDL Init");
     SDL_Quit();
     return false;
@@ -33,7 +34,7 @@ bool HM_SDLSetup() {
   if (!vidOk)
     return false;
 
-  HM_SdlSetupControllers();
+  HM_SdlOpenControllers();
   return true;
 }
 
@@ -63,21 +64,33 @@ bool HM_SdlSetupVideo() {
   return true;
 }
 
-void HM_SdlSetupControllers() {
-  int MaxJoysticks = SDL_NumJoysticks();
-  int ControllerIndex = 0;
-  for(int JoystickIndex=0; JoystickIndex < MaxJoysticks; ++JoystickIndex)
+void HM_SdlOpenControllers() {
+  int joyMax = SDL_NumJoysticks();
+  numControllers = 0;
+  for(int joyIdx=0; joyIdx < joyMax; ++joyIdx)
   {
-      if (!SDL_IsGameController(JoystickIndex))
+      if (!SDL_IsGameController(joyIdx))
       {
           continue;
       }
-      if (ControllerIndex >= maxControllers)
+      if (numControllers >= maxControllers)
       {
           break;
       }
-      ControllerHandles[ControllerIndex] = SDL_GameControllerOpen(JoystickIndex);
-      ControllerIndex++;
+      controllerHandles[numControllers] = SDL_GameControllerOpen(joyIdx);
+      numControllers++;
+  }
+}
+
+void HM_SdlCloseController(int joyIdx) {
+  if (controllerHandles[joyIdx]) {
+    SDL_GameControllerClose(controllerHandles[joyIdx]);
+   }
+}
+
+void HM_SdlCloseControllers() {
+  for (int joyIdx = 0; joyIdx < numControllers; ++joyIdx) {
+    HM_SdlCloseController(joyIdx);
   }
 }
 
