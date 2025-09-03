@@ -56,6 +56,11 @@ void HandleEvent(SDL_Event *Event) {
     case SDL_WINDOWEVENT: {
       HandleSdlWindowEvent(Event->window);
     } break;
+    case SDL_CONTROLLERDEVICEADDED:
+    case SDL_CONTROLLERDEVICEREMOVED:
+    case SDL_CONTROLLERDEVICEREMAPPED: {
+      HM_SdlSetupControllers();
+    } break;
   }
 }
 
