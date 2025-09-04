@@ -5,14 +5,18 @@
 #include "SDL_gamecontroller.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
+#include <cstdint>
 #include <sys/mman.h>
 
 #include <cstdlib>
 
+// Maps extern
 struct HM_Sdl hm_sdl;
-const int maxControllers = 4;
-int numControllers;
-SDL_GameController* controllerHandles[maxControllers];
+
+int activeCtrlers;
+SDL_GameController* CtrlerHandles[maxControllers];
+// Maps extern
+struct HM_Controls* Ctrlers[maxControllers];
 
 bool HM_SDLSetup() {
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
@@ -36,7 +40,7 @@ bool HM_SDLSetup() {
   if (!vidOk)
     return false;
 
-  HM_SdlOpenControllers();
+  HM_SdlCtrlrsOpenAll();
   return true;
 }
 
@@ -66,33 +70,33 @@ bool HM_SdlSetupVideo() {
   return true;
 }
 
-void HM_SdlOpenControllers() {
+void HM_SdlCtrlrsOpenAll() {
   int joyMax = SDL_NumJoysticks();
-  numControllers = 0;
+  activeCtrlers = 0;
   for(int joyIdx=0; joyIdx < joyMax; ++joyIdx)
   {
       if (!SDL_IsGameController(joyIdx))
       {
           continue;
       }
-      if (numControllers >= maxControllers)
+      if (activeCtrlers >= maxControllers)
       {
           break;
       }
-      controllerHandles[numControllers] = SDL_GameControllerOpen(joyIdx);
-      numControllers++;
+      CtrlerHandles[activeCtrlers] = SDL_GameControllerOpen(joyIdx);
+      activeCtrlers++;
   }
 }
 
-void HM_SdlCloseController(int joyIdx) {
-  if (controllerHandles[joyIdx]) {
-    SDL_GameControllerClose(controllerHandles[joyIdx]);
+void HM_SdlCtrlerClose(int joyIdx) {
+  if (CtrlerHandles[joyIdx]) {
+    SDL_GameControllerClose(CtrlerHandles[joyIdx]);
    }
 }
 
-void HM_SdlCloseControllers() {
-  for (int joyIdx = 0; joyIdx < numControllers; ++joyIdx) {
-    HM_SdlCloseController(joyIdx);
+void HM_SdlCtrlersCloseAll() {
+  for (int joyIdx = 0; joyIdx < activeCtrlers; ++joyIdx) {
+    HM_SdlCtrlerClose(joyIdx);
   }
 }
 
@@ -139,7 +143,7 @@ void HM_SDLSetupTexture() {
     MAP_ANONYMOUS | MAP_PRIVATE,
     -1, 0);
 
-  // malloc and free posix compliant option:
+  // malloc() and free() posix compliant option:
   // if (hm_sdl.bitmapMemory) {
   //   free(hm_sdl.bitmapMemory);
   // }
@@ -170,4 +174,31 @@ void HM_RenderOffsetGradient (int offX, int offY) {
     row += hm_sdl.pitch;
   }
   HM_RenderTexture();
+}
+
+void HM_SdlControllersPoll() {
+  for (int ControllerIndex = 0;
+     ControllerIndex < maxControllers;
+     ++ControllerIndex) {
+    SDL_GameController* ctrler = CtrlerHandles[ControllerIndex];
+    if(ctrler == 0 || SDL_GameControllerGetAttached(ctrler)) {
+      continue;
+    }
+
+    bool Up = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_DPAD_UP);
+    bool Down = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
+    bool Left = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
+    bool Right = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+    bool Start = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_START);
+    bool Back = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_BACK);
+    bool LeftShoulder = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
+    bool RightShoulder = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+    bool AButton = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_A);
+    bool BButton = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_B);
+    bool XButton = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_X);
+    bool YButton = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_Y);
+
+    int16_t StickX = SDL_GameControllerGetAxis(ctrler, SDL_CONTROLLER_AXIS_LEFTX);
+    int16_t StickY = SDL_GameControllerGetAxis(ctrler, SDL_CONTROLLER_AXIS_LEFTY);
+  }
 }

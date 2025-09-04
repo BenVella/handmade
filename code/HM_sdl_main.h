@@ -34,10 +34,30 @@ const Color MAGENTA = {255, 0, 255};
 const Color GRAY    = {128, 128, 128};
 const Color ORANGE  = {255, 165, 0};
 
+struct HM_Controls {
+    bool Up;
+    bool Down;
+    bool Left;
+    bool Right;
+    bool Start;
+    bool Back;
+    bool LeftShoulder;
+    bool RightShoulder;
+    bool AButton;
+    bool BButton;
+    bool XButton;
+    bool YButton;
+    int16_t StickX;
+    int16_t StickY;
+};
+
+const int maxControllers = 4;
+extern struct HM_Controls* Ctrlers[maxControllers];
+
 bool HM_SDLSetup();
 bool HM_SdlSetupVideo();
-void HM_SdlOpenControllers();
-void HM_SdlCloseControllers();
+void HM_SdlCtrlrsOpenAll();
+void HM_SdlCtrlersCloseAll();
 void HM_SdlCloseController();
 void HM_RenderTexture();
 void HM_SDLSetupTexture();
