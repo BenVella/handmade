@@ -3,9 +3,10 @@
 #include "HM_common.h"
 #include "SDL.h"
 #include "SDL_gamecontroller.h"
+#include "SDL_haptic.h"
+#include "SDL_log.h"
 #include "SDL_render.h"
 #include "SDL_stdinc.h"
-#include <cstdint>
 #include <sys/mman.h>
 
 #include <cstdlib>
@@ -13,10 +14,11 @@
 // Maps extern
 struct HM_Sdl hm_sdl;
 
+// Maps extern
+struct HM_Controls Ctrlers[maxControllers];
 int activeCtrlers;
 SDL_GameController* CtrlerHandles[maxControllers];
-// Maps extern
-struct HM_Controls* Ctrlers[maxControllers];
+SDL_Haptic* RumbleHandles[maxControllers];
 
 bool HM_SDLSetup() {
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
@@ -29,7 +31,8 @@ bool HM_SDLSetup() {
   atexit(SDL_Quit);
   int sdlInit = SDL_Init(
         SDL_INIT_VIDEO |
-        SDL_INIT_GAMECONTROLLER);
+        SDL_INIT_GAMECONTROLLER |
+        SDL_INIT_HAPTIC);
   if (sdlInit != 0) {
     LogSdlError("Failed SDL Init");
     SDL_Quit();
@@ -69,37 +72,6 @@ bool HM_SdlSetupVideo() {
   }
   return true;
 }
-
-void HM_SdlCtrlrsOpenAll() {
-  int joyMax = SDL_NumJoysticks();
-  activeCtrlers = 0;
-  for(int joyIdx=0; joyIdx < joyMax; ++joyIdx)
-  {
-      if (!SDL_IsGameController(joyIdx))
-      {
-          continue;
-      }
-      if (activeCtrlers >= maxControllers)
-      {
-          break;
-      }
-      CtrlerHandles[activeCtrlers] = SDL_GameControllerOpen(joyIdx);
-      activeCtrlers++;
-  }
-}
-
-void HM_SdlCtrlerClose(int joyIdx) {
-  if (CtrlerHandles[joyIdx]) {
-    SDL_GameControllerClose(CtrlerHandles[joyIdx]);
-   }
-}
-
-void HM_SdlCtrlersCloseAll() {
-  for (int joyIdx = 0; joyIdx < activeCtrlers; ++joyIdx) {
-    HM_SdlCtrlerClose(joyIdx);
-  }
-}
-
 void HM_RenderTexture() {
   if (SDL_UpdateTexture(
         hm_sdl.bitmapTexture, 0, 
@@ -176,29 +148,84 @@ void HM_RenderOffsetGradient (int offX, int offY) {
   HM_RenderTexture();
 }
 
-void HM_SdlControllersPoll() {
-  for (int ControllerIndex = 0;
-     ControllerIndex < maxControllers;
-     ++ControllerIndex) {
-    SDL_GameController* ctrler = CtrlerHandles[ControllerIndex];
-    if(ctrler == 0 || SDL_GameControllerGetAttached(ctrler)) {
+void HM_SdlLoadControls(SDL_GameController* ctrler) {
+  for (int ctrlerIdx = 0; ctrlerIdx < maxControllers; ++ctrlerIdx) {
+    SDL_GameController* handle = CtrlerHandles[ctrlerIdx];
+    if(handle == 0 || SDL_GameControllerGetAttached(handle)) {
       continue;
     }
 
-    bool Up = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_DPAD_UP);
-    bool Down = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
-    bool Left = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
-    bool Right = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
-    bool Start = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_START);
-    bool Back = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_BACK);
-    bool LeftShoulder = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
-    bool RightShoulder = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
-    bool AButton = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_A);
-    bool BButton = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_B);
-    bool XButton = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_X);
-    bool YButton = SDL_GameControllerGetButton(ctrler, SDL_CONTROLLER_BUTTON_Y);
+    struct HM_Controls ctrler;
+    ctrler.Up =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_DPAD_UP);
+    ctrler.Down =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
+    ctrler.Left =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
+    ctrler.Right =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+    ctrler.Start =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_START);
+    ctrler.Back =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_BACK);
+    ctrler.LeftShoulder =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
+    ctrler.RightShoulder =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+    ctrler.AButton =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_A);
+    ctrler.BButton =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_B);
+    ctrler.XButton =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_X);
+    ctrler.YButton =
+			SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_Y);
 
-    int16_t StickX = SDL_GameControllerGetAxis(ctrler, SDL_CONTROLLER_AXIS_LEFTX);
-    int16_t StickY = SDL_GameControllerGetAxis(ctrler, SDL_CONTROLLER_AXIS_LEFTY);
+    ctrler.StickX = SDL_GameControllerGetAxis(handle, SDL_CONTROLLER_AXIS_LEFTX);
+    ctrler.StickY = SDL_GameControllerGetAxis(handle, SDL_CONTROLLER_AXIS_LEFTY);
+
+    Ctrlers[ctrlerIdx] = ctrler;
+    const char* ctrlerName = SDL_GameControllerNameForIndex(ctrlerIdx);
+    SDL_LogDebug(0, "Started controller index %d named: %s", ctrlerIdx, ctrlerName);
+    SDL_Joystick *JoyHandle = SDL_GameControllerGetJoystick(handle);
+    RumbleHandles[ctrlerIdx] = SDL_HapticOpenFromJoystick(JoyHandle);
+
+    if (SDL_HapticRumbleInit(RumbleHandles[ctrlerIdx]) != 0) {
+        SDL_HapticClose(RumbleHandles[ctrlerIdx]);
+        RumbleHandles[ctrlerIdx] = 0;
+    }
   }
 }
+
+void HM_SdlCtrlrsOpenAll() {
+  SDL_LogDebug(0, "Opening Controllers");
+  int joyMax = SDL_NumJoysticks();
+  activeCtrlers = 0;
+  for(int joyIdx=0; joyIdx < joyMax; ++joyIdx)
+  {
+      if (!SDL_IsGameController(joyIdx)) {
+          continue;
+      }
+      if (activeCtrlers >= maxControllers) {
+          break;
+      }
+      CtrlerHandles[activeCtrlers] = SDL_GameControllerOpen(joyIdx);
+      activeCtrlers++;
+  }
+  SDL_LogDebug(0, "Opened %d controllers", activeCtrlers);
+}
+
+void HM_SdlCtrlerClose(int joyIdx) {
+  if (CtrlerHandles[joyIdx]) {
+    SDL_GameControllerClose(CtrlerHandles[joyIdx]);
+  }
+  if (RumbleHandles[joyIdx])
+    SDL_HapticClose(RumbleHandles[joyIdx]);
+}
+
+void HM_SdlCtrlersCloseAll() {
+  for (int joyIdx = 0; joyIdx < activeCtrlers; ++joyIdx) {
+    HM_SdlCtrlerClose(joyIdx);
+  }
+}
+

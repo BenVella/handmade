@@ -8,6 +8,7 @@
 
 #include "HM_sdl_main.h"
 #include "HM_common.h"
+#include "SDL_keycode.h"
 
 void DrawColor(const Color& color) {
   SDL_Renderer* renderer = hm_sdl.renderer;
@@ -59,7 +60,19 @@ void HandleEvent(SDL_Event *Event) {
     case SDL_CONTROLLERDEVICEADDED:
     case SDL_CONTROLLERDEVICEREMOVED:
     case SDL_CONTROLLERDEVICEREMAPPED: {
-      HM_SdlOpenControllers();
+      HM_SdlCtrlrsOpenAll();
+    } break;
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+    {
+        SDL_Keycode KeyCode = Event->key.keysym.sym;
+        SDL_LogDebug(0, "Key pressed %d: %d", 
+            Event->type, KeyCode);
+
+        bool wasDown = Event->key.state == SDL_RELEASED || Event->key.repeat != 0;
+        if (KeyCode == SDLK_w && wasDown) {
+          SDL_LogDebug(0, "Forward!");
+        }
     } break;
   }
 }

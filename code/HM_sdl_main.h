@@ -52,7 +52,7 @@ struct HM_Controls {
 };
 
 const int maxControllers = 4;
-extern struct HM_Controls* Ctrlers[maxControllers];
+extern struct HM_Controls Ctrlers[maxControllers];
 
 bool HM_SDLSetup();
 bool HM_SdlSetupVideo();
