@@ -59,6 +59,7 @@ bool HM_SdlSetupVideo();
 void HM_SdlCtrlrsOpenAll();
 void HM_SdlCtrlersCloseAll();
 void HM_SdlCloseController();
+void HM_SdlAudioSetup();
 void HM_RenderTexture();
 void HM_SDLSetupTexture();
 void HM_RenderOffsetGradient (int offX, int offY);

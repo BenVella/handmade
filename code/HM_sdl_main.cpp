@@ -32,7 +32,8 @@ bool HM_SDLSetup() {
   int sdlInit = SDL_Init(
         SDL_INIT_VIDEO |
         SDL_INIT_GAMECONTROLLER |
-        SDL_INIT_HAPTIC);
+        SDL_INIT_HAPTIC |
+        SDL_INIT_AUDIO);
   if (sdlInit != 0) {
     LogSdlError("Failed SDL Init");
     SDL_Quit();
@@ -44,6 +45,7 @@ bool HM_SDLSetup() {
     return false;
 
   HM_SdlCtrlrsOpenAll();
+  HM_SdlAudioSetup();
   return true;
 }
 
@@ -229,3 +231,21 @@ void HM_SdlCtrlersCloseAll() {
   }
 }
 
+void
+SDLAudioCallback(void *UserData, Uint8 *AudioData, int Length)
+{
+    // Clear our audio buffer to silence.
+    memset(AudioData, 0, Length);
+}
+
+void HM_SdlAudioSetup() {
+  SDL_AudioSpec AudioSettings = {0};
+
+  AudioSettings.freq = SamplesPerSecond;
+  AudioSettings.format = AUDIO_S16LE;
+  AudioSettings.channels = 2;
+  AudioSettings.samples = BufferSize;
+  AudioSettings.callback = &SDLAudioCallback;
+
+  SDL_OpenAudio(&AudioSettings, 0);
+}
