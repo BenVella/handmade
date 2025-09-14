@@ -47,8 +47,27 @@ void HandleSdlWindowEvent(const SDL_WindowEvent& winEvent) {
   }
 }
 
-void HandleEvent(SDL_Event *Event) {
+void HandleKeys(SDL_Event *Event) {
+  bool AltKeyWasDown = (Event->key.keysym.mod & KMOD_ALT);
+  SDL_Keycode KeyCode = Event->key.keysym.sym;
+  SDL_LogDebug(0, "Key pressed %d: %d", 
+      Event->type, KeyCode);
 
+  bool KeyWasDown = Event->key.state == SDL_RELEASED || Event->key.repeat != 0;
+  if (KeyWasDown) {
+
+    switch(KeyCode) {
+      case SDLK_F4: {
+        StopRunning();
+      } break;
+      case SDLK_w: {
+        SDL_LogDebug(0, "Forward!");
+      } break;
+    }
+  }
+}
+
+void HandleEvent(SDL_Event *Event) {
   switch (Event->type) {
     case SDL_QUIT: {
       printf("SDL_QUIT\n");
@@ -65,14 +84,7 @@ void HandleEvent(SDL_Event *Event) {
     case SDL_KEYDOWN:
     case SDL_KEYUP:
     {
-        SDL_Keycode KeyCode = Event->key.keysym.sym;
-        SDL_LogDebug(0, "Key pressed %d: %d", 
-            Event->type, KeyCode);
-
-        bool wasDown = Event->key.state == SDL_RELEASED || Event->key.repeat != 0;
-        if (KeyCode == SDLK_w && wasDown) {
-          SDL_LogDebug(0, "Forward!");
-        }
+      HandleKeys(Event);
     } break;
   }
 }

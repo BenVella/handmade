@@ -1,3 +1,15 @@
+# Build Requirements
+
+## Termux
+
+```bash
+pkg install sdl2 codelldb jq termux-x11-nightly
+```
+
+https://github.com/termux/termux-x11/releases/tag/nightly
+
+Install `app-arm64-v8a-debug.apk` using pkg installer
+
 ## Termux Launch
 
 - Requires x11-repo and termux-x11 installed (both pkg and app)

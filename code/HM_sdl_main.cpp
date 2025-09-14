@@ -200,6 +200,7 @@ void HM_SdlLoadControls(SDL_GameController* ctrler) {
 }
 
 void HM_SdlCtrlrsOpenAll() {
+  HM_SdlCtrlersCloseAll();
   SDL_LogDebug(0, "Opening Controllers");
   int joyMax = SDL_NumJoysticks();
   activeCtrlers = 0;
@@ -226,8 +227,9 @@ void HM_SdlCtrlerClose(int joyIdx) {
 }
 
 void HM_SdlCtrlersCloseAll() {
-  for (int joyIdx = 0; joyIdx < activeCtrlers; ++joyIdx) {
+  for (int joyIdx = activeCtrlers - 1; joyIdx >= 0; --joyIdx) {
     HM_SdlCtrlerClose(joyIdx);
+    activeCtrlers--;
   }
 }
 
