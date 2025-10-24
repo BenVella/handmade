@@ -6,7 +6,9 @@
 #include "SDL_haptic.h"
 #include "SDL_log.h"
 #include "SDL_render.h"
+#include "SDL_audio.h"
 #include "SDL_stdinc.h"
+#include <cstdint>
 #include <sys/mman.h>
 
 #include <cstdlib>
@@ -241,13 +243,59 @@ SDLAudioCallback(void *UserData, Uint8 *AudioData, int Length)
 }
 
 void HM_SdlAudioSetup() {
+  if (!SoundIsPlaying)
+  {
+    SDL_PauseAudio(0);
+    SoundIsPlaying = true;
+  }
+
   SDL_AudioSpec AudioSettings = {0};
+  int SamplesPerSecond = 48000;
+
+  // Todo: Likely wrong, check buffe reqs
+  int BytesPerSample = sizeof(int16_t) * 2;
+  int BytesToWrite = 800 * BytesPerSample;
+  Uint16 BufferSize = BytesToWrite;
 
   AudioSettings.freq = SamplesPerSecond;
-  AudioSettings.format = AUDIO_S16LE;
+  AudioSettings.format = AUDIO_S16LSB;
   AudioSettings.channels = 2;
-  AudioSettings.samples = BufferSize;
+  AudioSettings.samples = BufferSize / 2;
   AudioSettings.callback = &SDLAudioCallback;
 
   SDL_OpenAudio(&AudioSettings, 0);
+
+  if (AudioSettings.format != AUDIO_S16LSB) {
+    SDL_LogError(0, "Incorrect Audio Format returned: %d", AudioSettings.format);
+    SDL_CloseAudio();
+  }
+}
+
+void HM_AudioTest() {
+  // NOTE: Sound test
+  int SamplesPerSecond = 48000;
+  int ToneHz = 256;
+  int16_t ToneVolume = 3000;
+  uint32_t RunningSampleIndex = 0;
+  int SquareWavePeriod = SamplesPerSecond / ToneHz;
+  int HalfSquareWavePeriod = SquareWavePeriod / 2;
+  int BytesPerSample = sizeof(int16_t) * 2;
+  // See https://davidgow.net/handmadepenguin/ch8.html
+  int BytesToWrite = 800 * BytesPerSample;
+
+  // Prep Memory
+  void *SoundBuffer = malloc(BytesToWrite);
+  int16_t *SampleOut = (int16_t *)SoundBuffer;
+  int SampleCount = BytesToWrite/BytesPerSample;
+
+  // Write square wave
+  for(int SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex)
+  {
+      int16_t SampleValue = ((RunningSampleIndex++ / HalfSquareWavePeriod) % 2) ? ToneVolume : -ToneVolume;
+      *SampleOut++ = SampleValue;
+      *SampleOut++ = SampleValue;
+  }
+
+  SDL_QueueAudio(1, SoundBuffer, BytesToWrite);
+  free(SoundBuffer);
 }
