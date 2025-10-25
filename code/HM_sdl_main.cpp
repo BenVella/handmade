@@ -22,6 +22,8 @@ int activeCtrlers;
 SDL_GameController* CtrlerHandles[maxControllers];
 SDL_Haptic* RumbleHandles[maxControllers];
 
+bool SoundIsPlaying = false;
+
 bool HM_SDLSetup() {
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
   SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");

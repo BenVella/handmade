@@ -7,7 +7,7 @@ COMPILE_COMMANDS="$SOURCE_DIR/compile_commands.json"
 
 mkdir -p "$(dirname "$OUTPUT_FILE")"
 
-COMPILER="c++"
+COMPILER="clang++ -std=c++20"
 CFLAGS="-g $(sdl2-config --cflags --libs)"
 
 # Compile
