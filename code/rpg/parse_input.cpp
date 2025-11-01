@@ -1,4 +1,3 @@
-#include "../util/logger.cpp"
 #include <charconv>
 #include <cstdio>
 #include <string_view>
@@ -20,8 +19,9 @@ inline bool parse_int(std::string_view sv, int &out) {
 inline bool err_log_parse_rolls(int rollEntry, std::string_view token,
                                 const char *field = nullptr) {
   if (field) {
-    (LogLevel::ERROR, "Error parsing field '%s' in roll entry #%d: '%.*s'\n",
-     field, rollEntry, static_cast<int>(token.size()), token.data());
+    std::fprintf(stderr, "Error parsing field '%s' in roll entry #%d: '%.*s'\n",
+                 field, rollEntry, static_cast<int>(token.size()),
+                 token.data());
   } else {
     std::fprintf(stderr, "Error parsing roll entry #%d: '%.*s'\n", rollEntry,
                  static_cast<int>(token.size()), token.data());

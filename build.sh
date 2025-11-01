@@ -1,7 +1,8 @@
 #!/bin/bash
 
 SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INPUT_FILES=$(find "$SOURCE_DIR/code" -name '*.cpp')
+# INPUT_FILES=$(find "$SOURCE_DIR/code" -name '*.cpp')
+INPUT_FILES="$SOURCE_DIR/code/all.cpp"
 OUTPUT_FILE="$SOURCE_DIR/out/handmade"
 COMPILE_COMMANDS="$SOURCE_DIR/compile_commands.json"
 
