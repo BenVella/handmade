@@ -78,3 +78,4 @@ bool HM_SDLSetup();
 void HM_SdlCtrlrsOpenAll();
 void HM_SDLSetupTexture();
 void HM_RenderOffsetGradient(int offX, int offY);
+void HM_AudioTest();

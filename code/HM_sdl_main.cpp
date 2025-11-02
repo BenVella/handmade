@@ -1,3 +1,4 @@
+#include "SDL_audio.h"
 #include "hm_common.h"
 #include <sys/mman.h>
 
@@ -158,12 +159,9 @@ void HM_SdlCtrlrsOpenAll() {
   SDL_LogDebug(0, "Opened %d controllers", activeCtrlers);
 }
 
-void HM_SdlAudioSetup() {
-  if (!SoundIsPlaying) {
-    SDL_PauseAudio(0);
-    SoundIsPlaying = true;
-  }
+static SDL_AudioDeviceID device;
 
+void HM_SdlAudioSetup() {
   SDL_AudioSpec AudioSettings = {0};
   int SamplesPerSecond = 48000;
 
@@ -176,9 +174,12 @@ void HM_SdlAudioSetup() {
   AudioSettings.format = AUDIO_S16LSB;
   AudioSettings.channels = 2;
   AudioSettings.samples = BufferSize / 2;
-  AudioSettings.callback = &SDLAudioCallback;
 
-  SDL_OpenAudio(&AudioSettings, 0);
+  // TODO - Switch to callback for a ring buffer.  Just test with queue audio
+  // AudioSettings.callback = &SDLAudioCallback;
+  // SDL_OpenAudio(&AudioSettings, 0);
+  //
+  device = SDL_OpenAudioDevice(NULL, 0, &AudioSettings, NULL, 0);
 
   if (AudioSettings.format != AUDIO_S16LSB) {
     SDL_LogError(0, "Incorrect Audio Format returned: %d",
@@ -192,7 +193,8 @@ void HM_AudioTest() {
   int SamplesPerSecond = 48000;
   int ToneHz = 256;
   int16_t ToneVolume = 3000;
-  uint32_t RunningSampleIndex = 0;
+  static uint32_t RunningSampleIndex =
+      0; // Persist it, wraps around to 0 as unsigned
   int SquareWavePeriod = SamplesPerSecond / ToneHz;
   int HalfSquareWavePeriod = SquareWavePeriod / 2;
   int BytesPerSample = sizeof(int16_t) * 2;
@@ -213,11 +215,17 @@ void HM_AudioTest() {
     *SampleOut++ = SampleValue;
   }
 
-  SDL_QueueAudio(1, SoundBuffer, BytesToWrite);
+  SDL_QueueAudio(device, SoundBuffer, BytesToWrite);
   free(SoundBuffer);
+
+  if (!SoundIsPlaying) {
+    // SDL_PauseAudio(0);
+    SDL_PauseAudioDevice(device, 0);
+    SoundIsPlaying = true;
+  }
 }
 
-bool HM_SdlSetupVideo() {
+bool HM_SdlVideoSetup() {
   Uint64 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
   hm_sdl.window =
       SDL_CreateWindow("Handmade App", SDL_WINDOWPOS_CENTERED,
@@ -257,7 +265,7 @@ bool HM_SDLSetup() {
     return false;
   }
 
-  bool vidOk = HM_SdlSetupVideo();
+  bool vidOk = HM_SdlVideoSetup();
   if (!vidOk)
     return false;
 
