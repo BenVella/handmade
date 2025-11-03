@@ -1,3 +1,3 @@
-#include "HM_common.cpp"
-#include "HM_sdl_main.cpp"
-#include "HM_main.cpp"
+#include "hm_common.cpp"
+#include "sdl/sdl_all.cpp"
+#include "hm_main.cpp"

@@ -1,3 +1,5 @@
+#include "SDL.h"
+#include "SDL_events.h"
 #include "hm_common.h"
 
 void DrawColor(const Color &color) {

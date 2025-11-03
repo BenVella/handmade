@@ -1,7 +1,8 @@
 #pragma once
 
-#include "hm_sdl.h"
-
+#include "SDL_log.h"
+#include "SDL_render.h"
+#include "SDL_video.h"
 struct HM_App {
   bool IsRunning;
 };
