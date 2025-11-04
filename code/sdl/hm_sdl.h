@@ -8,3 +8,5 @@
 #include "SDL_messagebox.h"
 #include "SDL_render.h"
 #include "SDL_video.h"
+
+extern static hm_audio_ring_buffer GlobalAudioBuffer;

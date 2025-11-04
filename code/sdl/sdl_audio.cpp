@@ -1,6 +1,6 @@
 #include "SDL_audio.h"
-#include "hm_sdl.h"
 #include "../hm_common.h"
+#include <cstdint>
 
 struct hm_audio_ring_buffer {
   uint8_t *Data;
@@ -11,19 +11,35 @@ struct hm_audio_ring_buffer {
 
 static hm_audio_ring_buffer GlobalAudioBuffer;
 static SDL_AudioDeviceID device;
+//
+// void SDLAudioCallback(void *userData, Uint8 *stream, int len) {
+//   hm_audio_ring_buffer *buffer = &GlobalAudioBuffer;
+//
+//   uint32_t playIndex = buffer->PlayCursor;
+//   uint32_t size = buffer->Size;
+//
+//   for (int i = 0; i < len; ++i) {
+//     stream[i] = buffer->Data[playIndex];
+//     playIndex = (playIndex + 1) % size;
+//   }
+//
+//   buffer->PlayCursor = playIndex;
+// }
 
-void SDLAudioCallback(void *userData, Uint8 *stream, int len) {
-  hm_audio_ring_buffer *buffer = &GlobalAudioBuffer;
+void SDLAudioCallback(void *UserData, uint8_t *AudioData, int Length) {
+  hm_audio_ring_buffer *RingBuffer = (hm_audio_ring_buffer *)UserData;
 
-  uint32_t playIndex = buffer->PlayCursor;
-  uint32_t size = buffer->Size;
-
-  for (int i = 0; i < len; ++i) {
-    stream[i] = buffer->Data[playIndex];
-    playIndex = (playIndex + 1) % size;
+  int Region1Size = Length;
+  int Region2Size = 0;
+  if (RingBuffer->PlayCursor + Length > RingBuffer->Size) {
+    Region1Size = RingBuffer->Size - RingBuffer->PlayCursor;
+    Region2Size = Length - Region1Size;
   }
-
-  buffer->PlayCursor = playIndex;
+  memcpy(AudioData, (uint8_t *)(RingBuffer->Data) + RingBuffer->PlayCursor,
+         Region1Size);
+  memcpy(&AudioData[Region1Size], RingBuffer->Data, Region2Size);
+  RingBuffer->PlayCursor = (RingBuffer->PlayCursor + Length) % RingBuffer->Size;
+  RingBuffer->WriteCursor = (RingBuffer->PlayCursor + 2048) % RingBuffer->Size;
 }
 
 void HM_SdlAudioSetup() {
