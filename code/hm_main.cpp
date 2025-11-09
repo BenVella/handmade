@@ -99,18 +99,19 @@ int main(int argc, char *argv[]) {
     SDL_Log("Exiting due to failed Window or Renderer startup");
   }
 
-  SDL_Log("SDL Window started auccessfully");
+  SDL_Log("SDL Window started successfully");
 
   StartRunning();
 
   HM_SDLSetupTexture();
+
   int offX, offY = 0;
   while (hm_app.IsRunning) {
     PollSdlEvents();
     offX = (offX + 1) % 255;
     offY = offX;
     HM_RenderOffsetGradient(offX, offY);
-    HM_AudioTest();
+    // HM_AudioTest();
   }
   Quit();
 }

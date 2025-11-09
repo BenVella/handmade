@@ -1,5 +1,4 @@
 #include "SDL.h"
-#include "SDL_audio.h"
 #include "SDL_gamecontroller.h"
 #include "SDL_haptic.h"
 #include "../hm_common.h"
@@ -105,7 +104,6 @@ void HM_SdlLoadControls(SDL_GameController *ctrler) {
         SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_X);
     ctrler.YButton =
         SDL_GameControllerGetButton(handle, SDL_CONTROLLER_BUTTON_Y);
-
     ctrler.StickX =
         SDL_GameControllerGetAxis(handle, SDL_CONTROLLER_AXIS_LEFTX);
     ctrler.StickY =
@@ -274,6 +272,6 @@ bool HM_SDLSetup() {
     return false;
 
   HM_SdlCtrlrsOpenAll();
-  HM_SdlAudioSetup();
+  HM_SdlVideoSetup();
   return true;
 }

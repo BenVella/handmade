@@ -67,6 +67,15 @@ extern struct HM_Sdl hm_sdl;
 // Maps extern
 extern struct HM_Controls Ctrlers[maxControllers];
 
+struct hm_audio_ring_buffer {
+  uint8_t *Data;
+  uint32_t Size;        // total buffer size in bytes
+  uint32_t WriteCursor; // write position (game side)
+  uint32_t PlayCursor;  // read position (audio callback side)
+};
+
+extern struct hm_audio_ring_buffer GlobalAudioBuffer;
+
 inline void LogSdlError(const char *message) {
   SDL_Log("%s: %s\n", message, SDL_GetError());
 }
@@ -76,6 +85,7 @@ inline void StartRunning() { hm_app.IsRunning = true; }
 inline void StopRunning() { hm_app.IsRunning = false; }
 
 bool HM_SDLSetup();
+void HM_SdlAudioSetup();
 void HM_SdlCtrlrsOpenAll();
 void HM_SDLSetupTexture();
 void HM_RenderOffsetGradient(int offX, int offY);

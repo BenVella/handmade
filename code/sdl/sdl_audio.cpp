@@ -2,29 +2,7 @@
 #include "../hm_common.h"
 #include <cstdint>
 
-struct hm_audio_ring_buffer {
-  uint8_t *Data;
-  uint32_t Size;        // total buffer size in bytes
-  uint32_t WriteCursor; // write position (game side)
-  uint32_t PlayCursor;  // read position (audio callback side)
-};
-
-static hm_audio_ring_buffer GlobalAudioBuffer;
 static SDL_AudioDeviceID device;
-//
-// void SDLAudioCallback(void *userData, Uint8 *stream, int len) {
-//   hm_audio_ring_buffer *buffer = &GlobalAudioBuffer;
-//
-//   uint32_t playIndex = buffer->PlayCursor;
-//   uint32_t size = buffer->Size;
-//
-//   for (int i = 0; i < len; ++i) {
-//     stream[i] = buffer->Data[playIndex];
-//     playIndex = (playIndex + 1) % size;
-//   }
-//
-//   buffer->PlayCursor = playIndex;
-// }
 
 void SDLAudioCallback(void *UserData, uint8_t *AudioData, int Length) {
   hm_audio_ring_buffer *RingBuffer = (hm_audio_ring_buffer *)UserData;
