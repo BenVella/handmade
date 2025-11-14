@@ -155,78 +155,7 @@ void HM_SdlCtrlrsOpenAll() {
   }
   SDL_LogDebug(0, "Opened %d controllers", activeCtrlers);
 }
-//
-// void SDLAudioCallback(void *UserData, Uint8 *AudioData, int Length) {
-//   // Clear our audio buffer to silence.
-//   memset(AudioData, 0, Length);
-// }
-//
-// static SDL_AudioDeviceID device;
-//
-// void HM_SdlAudioSetup() {
-//   SDL_AudioSpec AudioSettings = {0};
-//   int SamplesPerSecond = 48000;
-//
-//   // Todo: Likely wrong, check buffe reqs
-//   int BytesPerSample = sizeof(int16_t) * 2;
-//   int BytesToWrite = 800 * BytesPerSample;
-//   Uint16 BufferSize = BytesToWrite;
-//
-//   AudioSettings.freq = SamplesPerSecond;
-//   AudioSettings.format = AUDIO_S16LSB;
-//   AudioSettings.channels = 2;
-//   AudioSettings.samples = BufferSize / 2;
-//
-//   // TODO - Switch to callback for a ring buffer.  Just test with queue audio
-//   // AudioSettings.callback = &SDLAudioCallback;
-//   // SDL_OpenAudio(&AudioSettings, 0);
-//   //
-//   device = SDL_OpenAudioDevice(NULL, 0, &AudioSettings, NULL, 0);
-//
-//   if (AudioSettings.format != AUDIO_S16LSB) {
-//     SDL_LogError(0, "Incorrect Audio Format returned: %d",
-//                  AudioSettings.format);
-//     SDL_CloseAudio();
-//   }
-// }
-//
-// void HM_AudioTest() {
-//   // NOTE: Sound test
-//   int SamplesPerSecond = 48000;
-//   int ToneHz = 256;
-//   int16_t ToneVolume = 3000;
-//   static uint32_t RunningSampleIndex =
-//       0; // Persist it, wraps around to 0 as unsigned
-//   int SquareWavePeriod = SamplesPerSecond / ToneHz;
-//   int HalfSquareWavePeriod = SquareWavePeriod / 2;
-//   int BytesPerSample = sizeof(int16_t) * 2;
-//   // See https://davidgow.net/handmadepenguin/ch8.html
-//   int BytesToWrite = 800 * BytesPerSample;
-//
-//   // Prep Memory
-//   void *SoundBuffer = malloc(BytesToWrite);
-//   int16_t *SampleOut = (int16_t *)SoundBuffer;
-//   int SampleCount = BytesToWrite / BytesPerSample;
-//
-//   // Write square wave
-//   for (int SampleIndex = 0; SampleIndex < SampleCount; ++SampleIndex) {
-//     int16_t SampleValue = ((RunningSampleIndex++ / HalfSquareWavePeriod) % 2)
-//                               ? ToneVolume
-//                               : -ToneVolume;
-//     *SampleOut++ = SampleValue;
-//     *SampleOut++ = SampleValue;
-//   }
-//
-//   SDL_QueueAudio(device, SoundBuffer, BytesToWrite);
-//   free(SoundBuffer);
-//
-//   if (!SoundIsPlaying) {
-//     // SDL_PauseAudio(0);
-//     SDL_PauseAudioDevice(device, 0);
-//     SoundIsPlaying = true;
-//   }
-// }
-//
+
 bool HM_SdlVideoSetup() {
   Uint64 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
   hm_sdl.window =
@@ -273,5 +202,6 @@ bool HM_SDLSetup() {
 
   HM_SdlCtrlrsOpenAll();
   HM_SdlVideoSetup();
+  HM_SdlAudioSetup();
   return true;
 }

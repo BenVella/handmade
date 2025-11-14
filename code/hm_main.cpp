@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
     offX = (offX + 1) % 255;
     offY = offX;
     HM_RenderOffsetGradient(offX, offY);
-    // HM_AudioTest();
+    HM_AudioTest();
   }
   Quit();
 }
