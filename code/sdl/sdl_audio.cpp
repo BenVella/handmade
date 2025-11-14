@@ -5,17 +5,21 @@
 static SDL_AudioDeviceID device;
 
 void SDLAudioCallback(void *UserData, uint8_t *AudioData, int Length) {
+
   hm_audio_ring_buffer *RingBuffer = (hm_audio_ring_buffer *)UserData;
 
   int Region1Size = Length;
   int Region2Size = 0;
+
   if (RingBuffer->PlayCursor + Length > RingBuffer->Size) {
     Region1Size = RingBuffer->Size - RingBuffer->PlayCursor;
     Region2Size = Length - Region1Size;
   }
+
   memcpy(AudioData, (uint8_t *)(RingBuffer->Data) + RingBuffer->PlayCursor,
          Region1Size);
   memcpy(&AudioData[Region1Size], RingBuffer->Data, Region2Size);
+
   RingBuffer->PlayCursor = (RingBuffer->PlayCursor + Length) % RingBuffer->Size;
   RingBuffer->WriteCursor = (RingBuffer->PlayCursor + 2048) % RingBuffer->Size;
 }
@@ -27,6 +31,7 @@ void HM_SdlAudioSetup() {
   want.channels = 2;
   want.samples = 4096;
   want.callback = SDLAudioCallback; // <-- ENABLE CALLBACK NOW
+  want.userdata = &GlobalAudioBuffer;
 
   device = SDL_OpenAudioDevice(NULL, 0, &want, NULL, 0);
   if (!device) {
