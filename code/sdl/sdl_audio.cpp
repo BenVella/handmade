@@ -31,7 +31,7 @@ void HM_SdlAudioSetup() {
   want.format = AUDIO_S16LSB;
   want.channels = 2;
   want.samples = 4096;
-  want.callback = SDLAudioCallback; // <-- ENABLE CALLBACK NOW
+  want.callback = SDLAudioCallback; // Enable
   want.userdata = &GlobalAudioBuffer;
 
   device = SDL_OpenAudioDevice(NULL, 0, &want, NULL, 0);
@@ -91,7 +91,6 @@ typedef float real32;
 typedef double real64;
 
 void hm_audio_test_sine_wave() {
-
   int SamplesPerSecond = 48000;
   int ToneHz = 256;
   int16_t ToneVolume = 3000;

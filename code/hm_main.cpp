@@ -111,7 +111,8 @@ int main(int argc, char *argv[]) {
     offX = (offX + 1) % 255;
     offY = offX;
     HM_RenderOffsetGradient(offX, offY);
-    hm_audio_test_square_wave();
+    // hm_audio_test_square_wave();
+    hm_audio_test_sine_wave();
   }
   Quit();
 }
