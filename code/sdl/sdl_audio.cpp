@@ -55,15 +55,16 @@ struct sdl_sound_output {
   int SamplesPerSecond = 48000;
   int ToneHz = 256;
   int16_t ToneVolume = 3000;
-  uint32_t RunningSampleIndex = 0;
-  int WavePeriod;
+  int RunningSampleIndex = 0;
+  real32 WavePeriod;
   int BytesPerSample = sizeof(int16_t) * 2;
   int SecondaryBufferSize;
 };
 
 void hm_audio_test_square_wave() {
   static struct sdl_sound_output SoundOutput;
-  SoundOutput.WavePeriod = SoundOutput.SamplesPerSecond / SoundOutput.ToneHz;
+  SoundOutput.WavePeriod =
+      SoundOutput.SamplesPerSecond / (real32)SoundOutput.ToneHz;
   int bytesToWrite = 800 * SoundOutput.BytesPerSample;
 
   // Lock while writing
@@ -74,7 +75,7 @@ void hm_audio_test_square_wave() {
 
   for (int i = 0; i < bytesToWrite; i += SoundOutput.BytesPerSample) {
     int16_t sample =
-        ((SoundOutput.RunningSampleIndex++ / SoundOutput.WavePeriod) % 2)
+        ((SoundOutput.RunningSampleIndex++ / (int)SoundOutput.WavePeriod) % 2)
             ? SoundOutput.ToneVolume
             : -SoundOutput.ToneVolume;
 
@@ -100,15 +101,17 @@ void sdl_fill_sound_buffer(sdl_sound_output *SoundOutput, int ByteToLock,
 
   real32 tSine;
   for (int i = 0; i < BytesToWrite; i += SoundOutput->BytesPerSample) {
-    tSine += 2.0f * Pi32 * SoundOutput->RunningSampleIndex++ /
+    tSine += 2.0f * Pi32 * SoundOutput->RunningSampleIndex /
              (real32)SoundOutput->WavePeriod;
-    int16_t sample = (int16_t)(sinf(tSine) * SoundOutput->ToneVolume);
+    real32 sineValue = sinf(tSine);
+    int16_t sample = (int16_t)(sineValue * SoundOutput->ToneVolume);
 
     *(int16_t *)(buffer + writeIndex) = sample;
     *(int16_t *)(buffer + writeIndex + 2) = sample;
 
     writeIndex =
         (writeIndex + SoundOutput->BytesPerSample) % GlobalAudioBuffer.Size;
+    SoundOutput->RunningSampleIndex++;
   }
 
   GlobalAudioBuffer.WriteCursor = writeIndex;
@@ -118,7 +121,8 @@ void sdl_fill_sound_buffer(sdl_sound_output *SoundOutput, int ByteToLock,
 
 void hm_sdl_audio_test_sine() {
   static struct sdl_sound_output SoundOutput;
-  SoundOutput.WavePeriod = SoundOutput.SamplesPerSecond / SoundOutput.ToneHz;
+  SoundOutput.WavePeriod =
+      SoundOutput.SamplesPerSecond / (real32)SoundOutput.ToneHz;
   int bytesToWrite = 800 * SoundOutput.BytesPerSample;
 
   sdl_fill_sound_buffer(&SoundOutput, 0, bytesToWrite);
