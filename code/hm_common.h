@@ -23,21 +23,18 @@ struct HM_Sdl {
 
 extern struct HM_Sdl hm_sdl;
 
+#define Pi32 3.14159265358979f
+
+typedef float real32;
+typedef double real64;
+
 typedef struct Color {
-  Uint8 r;
-  Uint8 g;
-  Uint8 b;
+  Uint8 r, g, b;
 } Color;
 
 // Predefined color list
-const Color RED = {255, 0, 0};
-const Color GREEN = {0, 255, 0};
-const Color BLUE = {0, 0, 255};
 const Color WHITE = {255, 255, 255};
-const Color BLACK = {0, 0, 0};
-const Color YELLOW = {255, 255, 0};
 const Color CYAN = {0, 255, 255};
-const Color MAGENTA = {255, 0, 255};
 const Color GRAY = {128, 128, 128};
 const Color ORANGE = {255, 165, 0};
 
@@ -84,10 +81,15 @@ inline void StartRunning() { hm_app.IsRunning = true; }
 
 inline void StopRunning() { hm_app.IsRunning = false; }
 
-bool HM_SDLSetup();
-void HM_SdlAudioSetup();
-void HM_SdlCtrlrsOpenAll();
-void HM_SDLSetupTexture();
-void HM_RenderOffsetGradient(int offX, int offY);
-void HM_AudioTest();
+// Sdl setup
+bool hm_sdl_setup();
+bool hm_sdl_setup_video();
+void hm_sdl_setup_audio();
+void hm_sdl_ctrl_open_all();
+void hm_sdl_setup_texture();
 
+// Sdl testing
+void hm_sdl_render_gradient_offset(int offX, int offY);
+
+void hm_sdl_audio_test_square();
+void hm_sdl_audio_test_sine();

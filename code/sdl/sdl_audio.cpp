@@ -25,7 +25,7 @@ void SDLAudioCallback(void *UserData, uint8_t *AudioData, int Length) {
   RingBuffer->WriteCursor = (RingBuffer->PlayCursor + 2048) % RingBuffer->Size;
 }
 
-void HM_SdlAudioSetup() {
+void hm_sdl_setup_audio() {
   SDL_AudioSpec want = {};
   want.freq = 48000;
   want.format = AUDIO_S16LSB;
@@ -51,17 +51,20 @@ void HM_SdlAudioSetup() {
   SDL_PauseAudioDevice(device, 0);
 }
 
-void hm_audio_test_square_wave() {
+struct sdl_sound_output {
   int SamplesPerSecond = 48000;
   int ToneHz = 256;
   int16_t ToneVolume = 3000;
-  static uint32_t RunningSampleIndex = 0;
+  uint32_t RunningSampleIndex = 0;
+  int WavePeriod;
+  int BytesPerSample = sizeof(int16_t) * 2;
+  int SecondaryBufferSize;
+};
 
-  int SquareWavePeriod = SamplesPerSecond / ToneHz;
-  int HalfSquareWavePeriod = SquareWavePeriod / 2;
-
-  int bytesPerSample = sizeof(int16_t) * 2;
-  int bytesToWrite = 800 * bytesPerSample;
+void hm_audio_test_square_wave() {
+  static struct sdl_sound_output SoundOutput;
+  SoundOutput.WavePeriod = SoundOutput.SamplesPerSecond / SoundOutput.ToneHz;
+  int bytesToWrite = 800 * SoundOutput.BytesPerSample;
 
   // Lock while writing
   SDL_LockAudioDevice(device);
@@ -69,15 +72,17 @@ void hm_audio_test_square_wave() {
   uint32_t writeIndex = GlobalAudioBuffer.WriteCursor;
   uint8_t *buffer = GlobalAudioBuffer.Data;
 
-  for (int i = 0; i < bytesToWrite; i += bytesPerSample) {
-    int16_t sample = ((RunningSampleIndex++ / HalfSquareWavePeriod) % 2)
-                         ? ToneVolume
-                         : -ToneVolume;
+  for (int i = 0; i < bytesToWrite; i += SoundOutput.BytesPerSample) {
+    int16_t sample =
+        ((SoundOutput.RunningSampleIndex++ / SoundOutput.WavePeriod) % 2)
+            ? SoundOutput.ToneVolume
+            : -SoundOutput.ToneVolume;
 
     *(int16_t *)(buffer + writeIndex) = sample;
     *(int16_t *)(buffer + writeIndex + 2) = sample;
 
-    writeIndex = (writeIndex + bytesPerSample) % GlobalAudioBuffer.Size;
+    writeIndex =
+        (writeIndex + SoundOutput.BytesPerSample) % GlobalAudioBuffer.Size;
   }
 
   GlobalAudioBuffer.WriteCursor = writeIndex;
@@ -85,40 +90,36 @@ void hm_audio_test_square_wave() {
   SDL_UnlockAudioDevice(device);
 }
 
-#define Pi32 3.14159265358979f
-
-typedef float real32;
-typedef double real64;
-
-void hm_audio_test_sine_wave() {
-  int SamplesPerSecond = 48000;
-  int ToneHz = 256;
-  int16_t ToneVolume = 3000;
-  static uint32_t RunningSampleIndex = 0;
-
-  int WavePeriod = SamplesPerSecond / ToneHz;
-
-  int bytesPerSample = sizeof(int16_t) * 2;
-  int bytesToWrite = 800 * bytesPerSample;
-
+void sdl_fill_sound_buffer(sdl_sound_output *SoundOutput, int ByteToLock,
+                           int BytesToWrite) {
   // Lock while writing
   SDL_LockAudioDevice(device);
 
   uint32_t writeIndex = GlobalAudioBuffer.WriteCursor;
   uint8_t *buffer = GlobalAudioBuffer.Data;
 
-  for (int i = 0; i < bytesToWrite; i += bytesPerSample) {
-    real32 t = 2.0f * Pi32 * RunningSampleIndex / (real32)WavePeriod;
+  for (int i = 0; i < BytesToWrite; i += SoundOutput->BytesPerSample) {
+    real32 t = 2.0f * Pi32 * SoundOutput->RunningSampleIndex++ /
+               (real32)SoundOutput->WavePeriod;
     real32 SineValue = sinf(t);
-    int16_t sample = (int16_t)(SineValue * ToneVolume);
+    int16_t sample = (int16_t)(SineValue * SoundOutput->ToneVolume);
 
     *(int16_t *)(buffer + writeIndex) = sample;
     *(int16_t *)(buffer + writeIndex + 2) = sample;
 
-    writeIndex = (writeIndex + bytesPerSample) % GlobalAudioBuffer.Size;
+    writeIndex =
+        (writeIndex + SoundOutput->BytesPerSample) % GlobalAudioBuffer.Size;
   }
 
   GlobalAudioBuffer.WriteCursor = writeIndex;
 
   SDL_UnlockAudioDevice(device);
+}
+
+void hm_sdl_audio_test_sine() {
+  static struct sdl_sound_output SoundOutput;
+  SoundOutput.WavePeriod = SoundOutput.SamplesPerSecond / SoundOutput.ToneHz;
+  int bytesToWrite = 800 * SoundOutput.BytesPerSample;
+
+  sdl_fill_sound_buffer(&SoundOutput, 0, bytesToWrite);
 }

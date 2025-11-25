@@ -16,7 +16,7 @@ void HandleSdlWindowEvent(const SDL_WindowEvent &winEvent) {
   case SDL_WINDOWEVENT_SIZE_CHANGED: {
     SDL_Log("SDL_WINDOWEVENT_SIZE_CHANGED (%d, %d)\n", winEvent.data1,
             winEvent.data2);
-    HM_SDLSetupTexture();
+    hm_sdl_setup_texture();
   } break;
   case SDL_WINDOWEVENT_EXPOSED: {
     static bool IsWhite = true;
@@ -24,7 +24,7 @@ void HandleSdlWindowEvent(const SDL_WindowEvent &winEvent) {
     IsWhite = !IsWhite;
   } break;
   case SDL_WINDOWEVENT_ENTER: {
-    HM_SDLSetupTexture();
+    hm_sdl_setup_texture();
   } break;
   case SDL_WINDOWEVENT_LEAVE: {
     DrawColor(CYAN);
@@ -66,7 +66,7 @@ void HandleEvent(SDL_Event *Event) {
   case SDL_CONTROLLERDEVICEADDED:
   case SDL_CONTROLLERDEVICEREMOVED:
   case SDL_CONTROLLERDEVICEREMAPPED: {
-    HM_SdlCtrlrsOpenAll();
+    hm_sdl_ctrl_open_all();
   } break;
   case SDL_KEYDOWN:
   case SDL_KEYUP: {
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Hello", "Hello, World!",
                            0);
 
-  if (!HM_SDLSetup()) {
+  if (!hm_sdl_setup()) {
     SDL_Log("Exiting due to failed Window or Renderer startup");
   }
 
@@ -103,16 +103,16 @@ int main(int argc, char *argv[]) {
 
   StartRunning();
 
-  HM_SDLSetupTexture();
+  hm_sdl_setup_texture();
 
   int offX, offY = 0;
   while (hm_app.IsRunning) {
     PollSdlEvents();
     offX = (offX + 1) % 255;
     offY = offX;
-    HM_RenderOffsetGradient(offX, offY);
-    // hm_audio_test_square_wave();
-    hm_audio_test_sine_wave();
+    hm_sdl_render_gradient_offset(offX, offY);
+    // hm_sdl_audio_test_square();
+    hm_sdl_audio_test_sine();
   }
   Quit();
 }

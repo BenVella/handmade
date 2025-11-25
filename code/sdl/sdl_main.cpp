@@ -20,7 +20,7 @@ void HM_RenderTexture() {
   SDL_RenderPresent(hm_sdl.renderer);
 }
 
-void HM_SDLSetupTexture() {
+void hm_sdl_setup_texture() {
   int w, h;
   SDL_GetWindowSize(hm_sdl.window, &w, &h);
 
@@ -48,7 +48,7 @@ void HM_SDLSetupTexture() {
   HM_RenderTexture();
 }
 
-void HM_RenderOffsetGradient(int offX, int offY) {
+void hm_sdl_render_gradient_offset(int offX, int offY) {
   Uint8 *row = (Uint8 *)hm_sdl.bitmapMemory;
 
   for (int y = 0; y < hm_sdl.bitmapHeight; ++y) {
@@ -138,7 +138,7 @@ void HM_SdlCtrlersCloseAll() {
   }
 }
 
-void HM_SdlCtrlrsOpenAll() {
+void hm_sdl_ctrl_open_all() {
   HM_SdlCtrlersCloseAll();
   SDL_LogDebug(0, "Opening Controllers");
   int joyMax = SDL_NumJoysticks();
@@ -156,7 +156,7 @@ void HM_SdlCtrlrsOpenAll() {
   SDL_LogDebug(0, "Opened %d controllers", activeCtrlers);
 }
 
-bool HM_SdlVideoSetup() {
+bool hm_sdl_setup_video() {
   Uint64 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
   hm_sdl.window =
       SDL_CreateWindow("Handmade App", SDL_WINDOWPOS_CENTERED,
@@ -179,7 +179,7 @@ bool HM_SdlVideoSetup() {
   return true;
 }
 
-bool HM_SDLSetup() {
+bool hm_sdl_setup() {
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
   SDL_SetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, "1");
   SDL_Log("Starting application with verbose logging...");
@@ -196,12 +196,11 @@ bool HM_SDLSetup() {
     return false;
   }
 
-  bool vidOk = HM_SdlVideoSetup();
+  bool vidOk = hm_sdl_setup_video();
   if (!vidOk)
     return false;
 
-  HM_SdlCtrlrsOpenAll();
-  HM_SdlVideoSetup();
-  HM_SdlAudioSetup();
+  hm_sdl_ctrl_open_all();
+  hm_sdl_setup_audio();
   return true;
 }
