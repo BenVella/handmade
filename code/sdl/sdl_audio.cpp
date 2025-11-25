@@ -98,11 +98,11 @@ void sdl_fill_sound_buffer(sdl_sound_output *SoundOutput, int ByteToLock,
   uint32_t writeIndex = GlobalAudioBuffer.WriteCursor;
   uint8_t *buffer = GlobalAudioBuffer.Data;
 
+  real32 tSine;
   for (int i = 0; i < BytesToWrite; i += SoundOutput->BytesPerSample) {
-    real32 t = 2.0f * Pi32 * SoundOutput->RunningSampleIndex++ /
-               (real32)SoundOutput->WavePeriod;
-    real32 SineValue = sinf(t);
-    int16_t sample = (int16_t)(SineValue * SoundOutput->ToneVolume);
+    tSine += 2.0f * Pi32 * SoundOutput->RunningSampleIndex++ /
+             (real32)SoundOutput->WavePeriod;
+    int16_t sample = (int16_t)(sinf(tSine) * SoundOutput->ToneVolume);
 
     *(int16_t *)(buffer + writeIndex) = sample;
     *(int16_t *)(buffer + writeIndex + 2) = sample;
